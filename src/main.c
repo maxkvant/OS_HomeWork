@@ -178,7 +178,18 @@ break interrupt56
 break interrupt57
 break interrupt58
 break interrupt59
-   
+
+   print (void*)*((uint64_t*)$rsp - 11)
+   print (void*)*((uint64_t*)$rsp - 10)
+   print (void*)*((uint64_t*)$rsp - 9)
+   print (void*)*((uint64_t*)$rsp - 8)
+   print (void*)*((uint64_t*)$rsp - 7)
+   print (void*)*((uint64_t*)$rsp - 6)
+   print (void*)*((uint64_t*)$rsp - 5)
+   print (void*)*((uint64_t*)$rsp - 4)
+   print (void*)*((uint64_t*)$rsp - 3)
+   print (void*)*((uint64_t*)$rsp - 2)
+   print (void*)*((uint64_t*)$rsp - 1)   
    print (void*)*((uint64_t*)$rsp + 0)
    print (void*)*((uint64_t*)$rsp + 1)
    print (void*)*((uint64_t*)$rsp + 2)

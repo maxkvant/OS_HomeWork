@@ -217,7 +217,6 @@ enable_paging:
 	.asciz "Enable paging...\n"
 	
 	.code64
-	.globl start64
 start64:
 	lgdt gdt_ptr64
 	movabsq $bootstrap_stack_top, %rax
@@ -227,6 +226,8 @@ start64:
 	movabsq $main, %rax
 	call *%rax
 
+	.globl start64ret
+start64ret: 
 	cli
 1:
 	hlt
