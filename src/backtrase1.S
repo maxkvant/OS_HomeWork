@@ -3,9 +3,8 @@
     .globl backtrace
     .type backtrace, @function
 backtrace:
-    sub $8, %rsp
-    pushq %rdi
-    movq 8(%rsp), %rdi
+    pushq %rbp
+    movq %rsp, %rbp
 
     pushq %rax
     pushq %rbx
@@ -22,8 +21,10 @@ backtrace:
     pushq %r14
     pushq %r15
     
+    mov %rbp, %rdi
+    mov %rsp, %rsi
     call backtraceF
-
+    
     popq %r15
     popq %r14
     popq %r13
@@ -39,7 +40,5 @@ backtrace:
     popq %rbx
     popq %rax
     
-    popq %rdi
-    add $8, %rsp
-    
+    popq %rbp
     ret

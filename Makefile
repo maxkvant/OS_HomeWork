@@ -36,3 +36,4 @@ $(C_OBJECTS): %.o: %.c
 .PHONY: clean
 clean:
 	rm -f kernel $(OBJ) $(DEP)
+	rm -r *.txt

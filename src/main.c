@@ -11,7 +11,6 @@ static void qemu_gdb_hang(void)
 #include <ints.h>
 #include <ioport.h>
 
-
 extern void doInterrupt(void);
 extern void backtrace(void);
 
@@ -42,7 +41,7 @@ void main(void) {
     
     puts("before int\n");
         
-    doInterrupt();
+    //doInterrupt();
     
     puts("after int\n");
     
@@ -178,6 +177,7 @@ break interrupt56
 break interrupt57
 break interrupt58
 break interrupt59
+80000000000
 
    print (void*)*((uint64_t*)$rsp - 11)
    print (void*)*((uint64_t*)$rsp - 10)
