@@ -237,6 +237,8 @@ start64ret:
 	.bss
 	.align PAGE_SIZE
 	.space PAGE_SIZE
+	
+    .globl bootstrap_stack_top
 bootstrap_stack_top:
 	.align PAGE_SIZE
 bootstrap_pml4:
