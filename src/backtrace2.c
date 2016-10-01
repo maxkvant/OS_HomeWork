@@ -9,7 +9,9 @@ void backtraceF(uint64_t* frame) { //frame: %rbp
     char* start64ret_p = (char*)&start64ret;
     
     for (int i = 0; i < max_stack_size; i++) {
-        printf("frame: %llx | returns_to (instruction): %llx\n", frame, *(frame+1));
+        if (i > 2) {
+            printf("frame: %llx | returns_to (instruction): %llx\n", frame, *(frame+1));
+        }
         frame = (uint64_t*)*frame;
         if ((char*)*(frame + 1) == start64ret_p) {
             break;
