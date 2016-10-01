@@ -6,7 +6,7 @@ void backtraceF(uint64_t* frame, uint64_t *rsp) { //frame: %rbp
     printf("backtrace {\n");
     uint64_t max_stack_size = 1 << 20;
     
-    for (int i = 0; (uint64_t)*frame - (uint64_t)rsp - 1 <= max_stack_size; i++) {
+    for (int i = 0; (uint64_t)*frame - (uint64_t)rsp <= max_stack_size && *frame > (uint64_t)frame; i++) {
         printf("    frame: %llx | returns_to (instruction): %llx\n", frame, *(frame+1));
         frame = (uint64_t*)*frame;
     }
