@@ -215,9 +215,9 @@ enter_long_mode:
 	.asciz "Enter long mode...\n"
 enable_paging:
 	.asciz "Enable paging...\n"
-
-
+	
 	.code64
+	.globl start64
 start64:
 	lgdt gdt_ptr64
 	movabsq $bootstrap_stack_top, %rax
