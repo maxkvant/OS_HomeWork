@@ -90,23 +90,12 @@ fc.write("static uint32_t cnti = 0;\n\n");
 fc.write("extern void backtrace();\n\n");
 
 fc.write("void interruptF(uint64_t x) {\n");
-fc.write("    char* s = \"00 -- \";\n");
-fc.write("    s[1] = x % 10 + '0'; s[0] = (x / 10) % 10 + '0';\n");
-fc.write("    puts(\"iterrupt \");\n");
-fc.write("    puts(s);\n");
-fc.write("    char* s2 = \"00000000\\n\";\n");
-fc.write("    int i = 8;\n");
-fc.write("    uint32_t cnt = cnti;\n");
-fc.write("    while (i--) {\n");
-fc.write("        s2[i] = cnt % 10 + '0';\n");
-fc.write("        cnt /= 10;\n");
-fc.write("    }\n");
-fc.write("    cnti++;\n");
-fc.write("    puts(s2);\n");
+fc.write("    printf(\"interrupt %u   #%lld {\\n\", x, cnti++);\n");
 fc.write("    backtrace();\n");
 fc.write("    if (32 <= x && x < 48) {\n");
 fc.write("        picEndOfInterrupt((uint16_t)x);\n");
 fc.write("    }\n");
+fc.write("    printf(\"}\\n\\n\");\n");
 fc.write("}\n\n");
 
 fc.write("\n\n");

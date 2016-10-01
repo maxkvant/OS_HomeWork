@@ -26,20 +26,6 @@ void puts(char *s) {
     }
 }
 
-void putHex(uint64_t x) {
-    char *s = "0";
-    puts("0x");
-    for (int i = 64 - 4; i >= 0; i -= 4) {
-        uint8_t c = (x >> i) & 0xf;
-        if (c < 10) {
-            s[0] = c + '0';
-        } else {
-            s[0] = (c - 10) + 'a';
-        }
-        puts(s);
-    }
-}
-
 #define MASTER_C 0x20
 #define MASTER_D 0x21
 #define SLAVE_C 0xA0

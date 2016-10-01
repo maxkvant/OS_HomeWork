@@ -46,7 +46,7 @@ void main(void) {
     
     puts("after int\n");
     
-    //enable_ints();
+    enable_ints();
     pitSetup();
     
     f(10);
@@ -93,7 +93,7 @@ void main(void) {
             
             printf("\n");
             
-            int m = sprintf(s1, 222, "%%H%c%clo, World! ----%x-----------------", 'e', 'l', 0x12345);
+            int m = sprintf(s1, 22, "%%H%c%clo, World! ---%d-----------------", 'e', 'l', 12345);
             printf("    %d\n", m);
             printf("    %s\n", s1);
             
@@ -102,7 +102,7 @@ void main(void) {
     int k = 0;
     while (1) {
         if (k % 555555 == 0) {
-            k++;    
+            printf("running\n");
         }
         k++;
     }

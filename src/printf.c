@@ -1,36 +1,5 @@
 #include<lib.h>
-
-//va_list -- fake
-//printf, snprintf -- not fake
-
-static int64_t va_i;
-
-static void __norm_va_i() {
-    if (8 <= va_i && va_i <= 10) {
-        va_i = 10;
-    } else if (va_i <= 3) {
-        va_i = 3;
-    }
-}
-
-uint64_t __va_arg(uint64_t* va_list) {
-    int i = va_i;
-    __norm_va_i(va_i);
-    va_i++;
-    return *(va_list + i);
-}
-
-void __set_va_i(int64_t i) {
-    va_i = i;
-}
-
-#define va_start(va_list, first_arg) \
-    va_list = (uint64_t*)&first_arg; \
-    __set_va_i(0); \
-    __va_arg(va_list); 
-    
-#define va_arg(list, type) ((type)__va_arg(list))
-
+#include <stdarg.h>
     
 static void (*putc_f)(char c);
 
@@ -127,7 +96,7 @@ static void putO(uint64_t x, int bytes) {
 
 static int64_t cur_len;
 
-static void __vprintf(char* s, uint64_t* va_list, void(*__putc_f)(char)) {
+static void __vprintf(char* s, va_list ap, void(*__putc_f)(char)) {
     cur_len = 0;
     putc_f = __putc_f;
     for (; *s; s++) {
@@ -152,17 +121,17 @@ static void __vprintf(char* s, uint64_t* va_list, void(*__putc_f)(char)) {
             if (*s == '%') {
                 putc_f('%');
             } if (*s == 's') { 
-                putS(va_arg(va_list, char*));
+                putS(va_arg(ap, char*));
             } else if (*s == 'c') {
-                putc_f(va_arg(va_list, char));
+                putc_f((char)va_arg(ap, int));
             } else if (*s == 'x') {
-                putX(va_arg(va_list, uint64_t), bytes);
+                putX(va_arg(ap, uint64_t), bytes);
             } else if (*s == 'o') {
-                putO(va_arg(va_list, uint64_t), bytes);
+                putO(va_arg(ap, uint64_t), bytes);
             } else if (*s == 'd' || *s == 'i') {
-                putD(va_arg(va_list,  int64_t), bytes);
+                putD(va_arg(ap,  int64_t), bytes);
             } else if (*s == 'u') {
-                putU(va_arg(va_list, uint64_t), bytes);
+                putU(va_arg(ap, uint64_t), bytes);
             }
         } else {
             putc_f(*s);
@@ -186,31 +155,33 @@ static void putc2(char c) {
     cur_len++;
 }
 
-int64_t vsnprintf(char *__buf, int64_t n, char* s, uint64_t* va_list) {
+int64_t vsnprintf(char *__buf, int64_t n, char* s, va_list ap) {
     buf = __buf;
     buf_n = n;
     if (n) {
         buf[0] = '\0';
     }
-    __vprintf(s, va_list, putc_n);
+    __vprintf(s, ap, putc_n);
     return cur_len;
 }
 
 int64_t sprintf(char *__buf, int64_t n, char* s, ...) {
-    uint64_t *va_list;
-    va_start(va_list, __buf);
-    __va_arg(va_list);
-    __va_arg(va_list);
-    return vsnprintf(__buf, n, s, va_list);
+    va_list ap;
+    va_start(ap, s);
+    int64_t res = vsnprintf(__buf, n, s, ap);
+    va_end(ap);
+    return res;
 }
 
-int64_t vprintf(char* s, uint64_t* va_list) {
-    __vprintf(s, va_list, putc2);
+int64_t vprintf(char* s, va_list ap) {
+    __vprintf(s, ap, putc2);
     return cur_len;
 }
 
 int64_t printf(char* s, ...) {
-    uint64_t *va_list;
-    va_start(va_list, s);
-    return vprintf(s, va_list);
+    va_list ap;
+    va_start(ap, s);
+    int64_t res =  vprintf(s, ap);
+    va_end(ap);
+    return res;
 }
