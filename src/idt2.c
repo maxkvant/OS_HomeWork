@@ -147,7 +147,7 @@ extern void backtrace();
 
 void interruptF(uint64_t x) {
     printf("interrupt %u   #%lld {\n", x, cnti++);
-    backtrace();
+    //backtrace();
     if (32 <= x && x < 48) {
         picEndOfInterrupt((uint16_t)x);
     }

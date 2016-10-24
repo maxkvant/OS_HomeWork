@@ -12,6 +12,7 @@
 
 	.align 16
 start32:
+	mov %ebx, %esi
 	jmp 1f
 
 
@@ -135,6 +136,7 @@ setup_mapping:
 	movl $(bootstrap_pml4 - VIRTUAL_BASE), %edi
 	movl $(bootstrap_pml3 - VIRTUAL_BASE + PTE_PRESENT + PTE_WRITE), %eax
 	movl %eax, (%edi)
+	movl %eax, 2048(%edi)
 	movl %eax, 4088(%edi)
 
 	movl %cr4, %eax
@@ -215,7 +217,8 @@ enter_long_mode:
 	.asciz "Enter long mode...\n"
 enable_paging:
 	.asciz "Enable paging...\n"
-	
+
+
 	.code64
 start64:
 	lgdt gdt_ptr64
@@ -223,11 +226,10 @@ start64:
 	movq %rax, %rsp
 
 	cld
+	mov %esi, %edi 
 	movabsq $main, %rax
 	call *%rax
 
-	.globl start64ret
-start64ret: 
 	cli
 1:
 	hlt
@@ -237,11 +239,11 @@ start64ret:
 	.bss
 	.align PAGE_SIZE
 	.space PAGE_SIZE
-	
-    .globl bootstrap_stack_top
 bootstrap_stack_top:
 	.align PAGE_SIZE
 bootstrap_pml4:
 	.space PAGE_SIZE
 bootstrap_pml3:
 	.space PAGE_SIZE
+	
+.globl bootstrap_stack_top
