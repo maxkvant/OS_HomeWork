@@ -13,6 +13,7 @@ struct Node_t {
 
 #define ORDER_SZ 50
 static Node order[ORDER_SZ];
+static Node deletedDescs;
 
 static Node* init(Node *node) {
     node->next = node;
@@ -44,26 +45,25 @@ static Node* remove(Node *node) {
 char* getPage();
 static int pageForNodesSz = 0;
 static char* pageForNodes;
-uint8_t inGet = 0;
 
 static Node* newNode() {
+    if (deletedDescs.next != &deletedDescs) {
+        return remove(deletedDescs.next);
+    } 
     if (pageForNodesSz < (int)sizeof(Node)) {
         pageForNodes = 0;
-        //printf("try new page for nodes\n");
         if (order[0].next != &order[0]) {
             pageForNodes = remove(order[0].next)->pointer;
         }
         if (!pageForNodes) {
-            //printf("can't alloc new Node\n");
+            printf("can't alloc new Node\n");
             return 0;
         } else {
             pageForNodesSz = PAGE_SIZE;
         }
-        //printf("new page for nodes %llx\n", pageForNodes);
     }
     pageForNodesSz -= sizeof(Node);
     Node* res = (Node*)(uint64_t)(pageForNodes + pageForNodesSz);
-    //printf("pageForNodesSz = %d\n", pageForNodesSz);
     init(res);
     return res;
 }
@@ -75,31 +75,23 @@ char* getPage() {
             break;
         }
     }
-    //printf("ii == %d\n\n", i);
     if (i >= ORDER_SZ) {
         if (order[0].next != &order[0]) {
-            return remove(order[0].next)->pointer;
+            Node *node = remove(order[0].next);
+            add(&deletedDescs, node);
+            return node->pointer;
         } else {
-            //printf("can't alloc new Node\n");
+            printf("can't alloc new Page\n");
             return 0;
         }
     } else {
-        inGet = 1;
-        //printf("remove(%llx);\n", order[i].next);
         Node *node = remove(order[i].next);
         for (; i > 0; i--) {
             Node *b = newNode();
             b->pointer = (node->pointer) + ((uint64_t)1 << (PAGE_SIZE_LOG + i - 1));
-            if (b -> pointer == 0) {
-                //printf("b -> pointer == 0\n");
-            }
-            //printf("add_%d %llx, b = %llx, b->pinter = %llx \n", i - 1, order + (i - 1), b, b -> pointer);
             add(order + (i - 1), b);
         }
-        inGet = 0;
-        if (node -> pointer == 0) {
-            //printf("node -> pointer == 0\n");
-        }
+        add(&deletedDescs, node);
         return node->pointer;
     }
 }
@@ -123,7 +115,7 @@ void pageAllocInit() {
     }
     
     uint64_t sum_mem = 0;
-    
+    init(&deletedDescs);
     
     for (int i = 0, first = 1; i < mem_map_len; i++) {
         if (memMap[i].type != 1) {
@@ -136,7 +128,6 @@ void pageAllocInit() {
         if (len < PAGE_SIZE) {
             continue;
         }
-        //printf("i = %d\n", i);
         if (first) {
             pageForNodes = (char*)L;
             pageForNodesSz = PAGE_SIZE;
@@ -149,14 +140,12 @@ void pageAllocInit() {
             if (len >= curLen) {
                 Node *node = newNode();
                 node->pointer = (char*)L;
-                //printf("  i = %d: %llx - %llx\n", i, L, L + curLen - 1);
                 add(order + i, node);
                 L += curLen;
                 len -= curLen;
             }
         }
     }
-    //printf("!!                                                  sum_mem = %d\n", sum_mem);
 }
 
 void delPage(char *page) {

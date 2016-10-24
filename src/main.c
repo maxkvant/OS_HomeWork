@@ -22,14 +22,24 @@ void main(multiboot_info_t *mbt) {
     initIdt();
     
     
-    int i = 0;
-    for (char* curPage; 0 != (curPage = getPage()); i++) {
-        //curPage[PAGE_SIZE - 1] = 'a';
-        //curPage[0] = 'b';
-        //curPage[100] = 'c';
-     //   printf("%d: %llx, allocated = %d\n", i, curPage, (i + 1) * PAGE_SIZE);
+    for (int j = 0; j < 10; j++) {
+        
+        char *lastPage = 0;
+        int i = 0;
+        for (char* curPage; 0 != (curPage = getPage()); i++) {
+            uint64_t *p = (uint64_t *)curPage;
+            *p = (uint64_t)lastPage;
+            lastPage = curPage;
+        }
+        printf("allocated = %d\n", i * PAGE_SIZE);
+        i = 0;
+        for (uint64_t *p = (uint64_t *)lastPage; p != 0; p = (uint64_t*)(uint64_t)*p, i++) {
+            delPage((char*)p);
+        }
+        printf("cleaned = %d\n\n", i * PAGE_SIZE);
+        
     }
-    printf("allocated = %d\n", i * PAGE_SIZE);
+    
     
     //picSetup();
     //enable_ints();
