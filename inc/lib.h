@@ -18,5 +18,6 @@
     void pageAllocInit();
     char* getPage();
     void delPage(char *page);
+    char* blockAllock(int sz);
     
 #endif

@@ -86,10 +86,10 @@ char* getPage() {
         }
     } else {
         Node *node = remove(order[i].next);
-        for (; i > 0; i--) {
+        for (int j = 0; j < i; j++) {
             Node *b = newNode();
-            b->pointer = (node->pointer) + ((uint64_t)1 << (PAGE_SIZE_LOG + i - 1));
-            add(order + (i - 1), b);
+            b->pointer = (node->pointer) + ((uint64_t)1 << (PAGE_SIZE_LOG + j));
+            add(order + j, b);
         }
         add(&deletedDescs, node);
         return node->pointer;
@@ -152,4 +152,25 @@ void delPage(char *page) {
     Node* node = newNode();
     node->pointer = page;
     add(&order[0], node);
+}
+
+
+char *blockAllockPage = 0;
+int blockAllockSz = 0;
+
+char* blockAllock(int sz) {
+    if (sz > PAGE_SIZE) {
+        return 0;
+    }
+    if (!blockAllockPage || blockAllockSz < sz) {
+        blockAllockPage = getPage();
+        if (!blockAllockPage) {
+            return 0;
+        }
+        blockAllockSz = PAGE_SIZE;
+    }
+    printf("%llx -> ", blockAllockPage + blockAllockSz);
+    blockAllockSz -= sz;
+    printf("%llx\n", blockAllockPage + blockAllockSz);
+    return blockAllockPage + blockAllockSz;
 }

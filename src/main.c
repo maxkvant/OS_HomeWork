@@ -10,7 +10,7 @@ static void qemu_gdb_hang(void)
 #include <lib.h>
 #include <ints.h>
 #include <ioport.h>
-#include <memory.h>
+#include <memory.h>  
 
 void main(multiboot_info_t *mbt) {
     qemu_gdb_hang();
@@ -21,11 +21,25 @@ void main(multiboot_info_t *mbt) {
     serialSetup();
     initIdt();
     
+    /*begin{blockAllockTest}*/
+    int n = 7;
+    volatile char ** a = (volatile char**)(uint64_t)blockAllock(n * sizeof(char*));
+    for (int i = 0; i < n; i++) {
+        a[i] = blockAllock(4);
+        for (int j = 0; j < 3; j++) {
+            a[i][j] = 'a' + i * 3 + j;
+        }
+    }
+    for (int i = 0; i < n; i++) {
+        printf("%s\n", a[i]);
+    }
+    printf("\n");
+    /*end{blockAllockTest}*/
     
     for (int j = 0; j < 10; j++) {
-        
         char *lastPage = 0;
         int i = 0;
+        printf("huge alloc:\n");
         for (char* curPage; 0 != (curPage = getPage()); i++) {
             uint64_t *p = (uint64_t *)curPage;
             *p = (uint64_t)lastPage;
