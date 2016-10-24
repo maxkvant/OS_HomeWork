@@ -22,15 +22,14 @@ void main(multiboot_info_t *mbt) {
     initIdt();
     
     
-    for (int i = 0; i < 100; i++) {
-        char* curPage = getPage();
-        
-        curPage[PAGE_SIZE - 1] = 'a';
-        curPage[0] = 'b';
-        curPage[100] = 'c';
-        printf("%d: %llx, curPage[0] == %c ('c')\n", i, curPage, curPage[100]);
-        delPage(curPage);
+    int i = 0;
+    for (char* curPage; 0 != (curPage = getPage()); i++) {
+        //curPage[PAGE_SIZE - 1] = 'a';
+        //curPage[0] = 'b';
+        //curPage[100] = 'c';
+     //   printf("%d: %llx, allocated = %d\n", i, curPage, (i + 1) * PAGE_SIZE);
     }
+    printf("allocated = %d\n", i * PAGE_SIZE);
     
     //picSetup();
     //enable_ints();

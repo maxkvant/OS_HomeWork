@@ -31,8 +31,12 @@ static void add(Node *a, Node *b) {
 }
 
 static Node* remove(Node *node) {
-    node->next->prev = node->prev;
-    node->prev->next = node->next;
+    Node *next = node->next;
+    Node *prev = node->prev;
+    
+    next->prev = node->prev;
+    prev->next = node->next;
+    
     return node;
 }
 
@@ -73,11 +77,11 @@ char* getPage() {
     }
     //printf("ii == %d\n\n", i);
     if (i >= ORDER_SZ) {
-        if (order[i].next == &order[i]) {
-            //printf("can't alloc new page\n");
-            return 0;
-        } else {
+        if (order[0].next != &order[0]) {
             return remove(order[0].next)->pointer;
+        } else {
+            //printf("can't alloc new Node\n");
+            return 0;
         }
     } else {
         inGet = 1;
@@ -85,11 +89,17 @@ char* getPage() {
         Node *node = remove(order[i].next);
         for (; i > 0; i--) {
             Node *b = newNode();
-            b->pointer = (node->pointer) + ((uint64_t)1 << (i - 1));
-            //printf("add_%d %llx %llx\n", i, order + (i - 1), b);
+            b->pointer = (node->pointer) + ((uint64_t)1 << (PAGE_SIZE_LOG + i - 1));
+            if (b -> pointer == 0) {
+                //printf("b -> pointer == 0\n");
+            }
+            //printf("add_%d %llx, b = %llx, b->pinter = %llx \n", i - 1, order + (i - 1), b, b -> pointer);
             add(order + (i - 1), b);
         }
         inGet = 0;
+        if (node -> pointer == 0) {
+            //printf("node -> pointer == 0\n");
+        }
         return node->pointer;
     }
 }
@@ -136,7 +146,7 @@ void pageAllocInit() {
         }
         for (int i = 48; i >= 0; i--) {
             int64_t curLen = ((int64_t)1 << (i + PAGE_SIZE_LOG));
-            if (len > curLen) {
+            if (len >= curLen) {
                 Node *node = newNode();
                 node->pointer = (char*)L;
                 //printf("  i = %d: %llx - %llx\n", i, L, L + curLen - 1);

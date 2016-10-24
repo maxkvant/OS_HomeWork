@@ -42,10 +42,13 @@ static void init_mmap(multiboot_memory_map_t* mmap, int type, uint64_t l, uint64
 
 static void useSeg(uint64_t l, uint64_t r) {
     for (int i = 0; i < mem_map_length; i++) {
+        if (memMap[i].type == 2) {
+            continue;
+        }
         uint64_t li = memMap[i].addr;
         uint64_t ri = li + memMap[i].len - 1;
         if (li <= l && r <= ri) {
-            memMap[i].len = l - li;
+            init_mmap(memMap + i, 1, li, l - 1);
             init_mmap(memMap + mem_map_length, 2, l, r);
             mem_map_length++;
             init_mmap(memMap + mem_map_length, 1, r+1, ri);
