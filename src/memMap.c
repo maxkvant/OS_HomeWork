@@ -9,10 +9,19 @@ extern char data_phys_end[];
 
 #define MAX_SZ 100
 
-static multiboot_memory_map_t memMap[MAX_SZ + 4];
-int64_t mem_map_length;
+multiboot_memory_map_t memMap[MAX_SZ + 4];
+static int64_t mem_map_length;
 
-void printMemMap__(multiboot_memory_map_t* mmap_addr, uint64_t mmap_length) {
+int64_t getMemMapLen() {
+    return mem_map_length;
+}
+
+multiboot_memory_map_t* getMemMap() {
+    return memMap;
+}
+
+
+static void printMemMap__(multiboot_memory_map_t* mmap_addr, uint64_t mmap_length) {
     for (uint64_t i = 0; i < mmap_length; i++) {
         multiboot_memory_map_t* mmap = mmap_addr + i;
         printf("    memory range: %llx - %llx, len %llx,  type %d\n", mmap->addr, mmap->addr + mmap->len - 1, mmap->len, mmap->type);
@@ -24,14 +33,14 @@ void printMemMap() {
     printMemMap__(memMap, mem_map_length);
 }
 
-void init_mmap(multiboot_memory_map_t* mmap, int type, uint64_t l, uint64_t r) {
+static void init_mmap(multiboot_memory_map_t* mmap, int type, uint64_t l, uint64_t r) {
     mmap -> size = sizeof(multiboot_memory_map_t) - sizeof(uint32_t);
     mmap->len  = r - l + 1;
     mmap->addr = l;
     mmap->type = type;
 }
 
-void useSeg(uint64_t l, uint64_t r) {
+static void useSeg(uint64_t l, uint64_t r) {
     for (int i = 0; i < mem_map_length; i++) {
         uint64_t li = memMap[i].addr;
         uint64_t ri = li + memMap[i].len - 1;

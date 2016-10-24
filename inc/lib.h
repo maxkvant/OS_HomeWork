@@ -2,6 +2,7 @@
 #define __LIB_H__
 
     #include <stdint.h>
+    #include <multiboot.h>
     
     void serialSetup();
     void putc(char c);
@@ -13,5 +14,9 @@
     void pitSetup();
     int64_t sprintf(char *__buf, int64_t n, char* s, ...);
     int64_t printf(char* s, ...);
+    void memMapInit(multiboot_info_t *mbt);
+    void pageAllocInit();
+    char* getPage();
+    void delPage(char *page);
     
 #endif

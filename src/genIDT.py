@@ -91,7 +91,7 @@ fc.write("extern void backtrace();\n\n");
 
 fc.write("void interruptF(uint64_t x) {\n");
 fc.write("    printf(\"interrupt %u   #%lld {\\n\", x, cnti++);\n");
-fc.write("    //backtrace();\n");
+fc.write("    backtrace();\n");
 fc.write("    if (32 <= x && x < 48) {\n");
 fc.write("        picEndOfInterrupt((uint16_t)x);\n");
 fc.write("    }\n");

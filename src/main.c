@@ -10,16 +10,28 @@ static void qemu_gdb_hang(void)
 #include <lib.h>
 #include <ints.h>
 #include <ioport.h>
-#include <multiboot.h>
-
-void memMapInit(multiboot_info_t *mbt);
+#include <memory.h>
 
 void main(multiboot_info_t *mbt) {
     qemu_gdb_hang();
     
     memMapInit(mbt);
+    pageAllocInit();
+    
     serialSetup();
     initIdt();
+    
+    
+    for (int i = 0; i < 100; i++) {
+        char* curPage = getPage();
+        
+        curPage[PAGE_SIZE - 1] = 'a';
+        curPage[0] = 'b';
+        curPage[100] = 'c';
+        printf("%d: %llx, curPage[0] == %c ('c')\n", i, curPage, curPage[100]);
+        delPage(curPage);
+    }
+    
     //picSetup();
     //enable_ints();
     //pitSetup();
