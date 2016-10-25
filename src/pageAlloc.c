@@ -46,21 +46,48 @@ char* getPage();
 static int pageForNodesSz = 0;
 static char* pageForNodes;
 
+static Node* newNode();
+
+static char *getPage_before(int *i) {
+    for ((*i) = 0; (*i) < ORDER_SZ; (*i)++) {
+        if (order[*i].next != &order[*i]) {
+            Node *node = remove(order[*i].next);
+            add(&deletedDescs, node);
+            return node->pointer;
+        }
+    }
+    return 0;
+}
+
+static void getPage_after(char *page, int i) {
+    if (page == 0) {
+        return;
+    }
+    for (int j = 0; j < i; j++) {
+        Node *b = newNode();
+        if (b == 0) {
+            printf("memory leak\n");
+            return;
+        }
+        b->pointer = page + ((uint64_t)1 << (PAGE_SIZE_LOG + j));
+        add(order + j, b);
+    }
+}
+
 static Node* newNode() {
     if (deletedDescs.next != &deletedDescs) {
         return remove(deletedDescs.next);
     } 
     if (pageForNodesSz < (int)sizeof(Node)) {
-        pageForNodes = 0;
-        if (order[0].next != &order[0]) {
-            pageForNodes = remove(order[0].next)->pointer;
-        }
-        if (!pageForNodes) {
-            printf("can't alloc new Node\n");
-            return 0;
-        } else {
+        int i;
+        pageForNodes = getPage_before(&i);
+        if (pageForNodes) {
             pageForNodesSz = PAGE_SIZE;
+        } else {
+            printf("can't alloc Node\n");
+            return 0;
         }
+        getPage_after(pageForNodes, i);
     }
     pageForNodesSz -= sizeof(Node);
     Node* res = (Node*)(uint64_t)(pageForNodes + pageForNodesSz);
@@ -70,30 +97,12 @@ static Node* newNode() {
 
 char* getPage() {
     int i;
-    for (i = 1; i < ORDER_SZ; i++) {
-        if (order[i].next != &order[i]) {
-            break;
-        }
+    char *page = getPage_before(&i);
+    if (!page) {
+        printf("can't alloc Page\n");
     }
-    if (i >= ORDER_SZ) {
-        if (order[0].next != &order[0]) {
-            Node *node = remove(order[0].next);
-            add(&deletedDescs, node);
-            return node->pointer;
-        } else {
-            printf("can't alloc new Page\n");
-            return 0;
-        }
-    } else {
-        Node *node = remove(order[i].next);
-        for (int j = 0; j < i; j++) {
-            Node *b = newNode();
-            b->pointer = (node->pointer) + ((uint64_t)1 << (PAGE_SIZE_LOG + j));
-            add(order + j, b);
-        }
-        add(&deletedDescs, node);
-        return node->pointer;
-    }
+    getPage_after(page, i);
+    return page;
 }
 
 int64_t getMemMapLen();
@@ -169,8 +178,6 @@ char* blockAllock(int sz) {
         }
         blockAllockSz = PAGE_SIZE;
     }
-    printf("%llx -> ", blockAllockPage + blockAllockSz);
     blockAllockSz -= sz;
-    printf("%llx\n", blockAllockPage + blockAllockSz);
     return blockAllockPage + blockAllockSz;
 }
