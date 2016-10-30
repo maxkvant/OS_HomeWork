@@ -2,14 +2,7 @@
 #include <memory.h>
 #include <multiboot.h>
 
-struct Node_t;
-typedef struct Node_t Node;
-
-struct Node_t {
-    Node *next;
-    Node *prev;
-    char* pointer;
-};
+#define Node PageListNode
 
 #define ORDER_SZ 50
 static Node order[ORDER_SZ];
@@ -133,6 +126,15 @@ void pageAllocInit() {
         
         uint64_t L = ceil(memMap[i].addr);
         int64_t len = memMap[i].len - (L - memMap[i].addr);
+        
+        uint64_t maxR = ((uint64_t)1 << 32);
+        if (L >= maxR) {
+            continue;
+        }
+        if (L + len >= maxR) {
+            len = maxR - L;
+        }
+        
         sum_mem += len;
         if (len < PAGE_SIZE) {
             continue;
@@ -167,12 +169,20 @@ void delPage(char *page) {
 char *blockAllockPage = 0;
 int blockAllockSz = 0;
 
-char* blockAllock(int sz) {
+void blockAllockInit(Node *listPages) {
+    init(listPages);
+    blockAllockSz = 0;
+}
+
+char* blockAllock(Node *listPages, int sz) {
     if (sz > PAGE_SIZE) {
         return 0;
     }
     if (!blockAllockPage || blockAllockSz < sz) {
         blockAllockPage = getPage();
+        Node* node = newNode();
+        node->pointer = blockAllockPage;
+        add(listPages, node);
         if (!blockAllockPage) {
             return 0;
         }
@@ -180,4 +190,10 @@ char* blockAllock(int sz) {
     }
     blockAllockSz -= sz;
     return blockAllockPage + blockAllockSz;
+}
+
+void blockAllockClear(Node *listPages) {
+    while (listPages != listPages->next) {
+        add(&order[0], remove(listPages->next));
+    }
 }

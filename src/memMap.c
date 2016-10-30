@@ -5,11 +5,12 @@ extern char bss_phys_begin[];
 extern char bss_phys_end[];
 extern char data_phys_begin[];
 extern char data_phys_end[];
-
+extern char text_phys_begin[];
+extern char text_phys_end[];
 
 #define MAX_SZ 100
 
-multiboot_memory_map_t memMap[MAX_SZ + 4];
+multiboot_memory_map_t memMap[MAX_SZ + 6];
 static int64_t mem_map_length;
 
 int64_t getMemMapLen() {
@@ -60,27 +61,25 @@ static void useSeg(uint64_t l, uint64_t r) {
 
 void memMapInit(multiboot_info_t *mbt) {
     printf(" bss_phys: [%llx %llx)\n", (uint64_t)bss_phys_begin , (uint64_t)bss_phys_end);
-    printf("data_phys: [%llx %llx)\n", (uint64_t)data_phys_begin , (uint64_t)data_phys_end);
+    printf("text/data_phys: [%llx %llx)\n", (uint64_t)text_phys_begin , (uint64_t)data_phys_end);
     printf("mbt %llx\n", mbt);
     
-    uint64_t n = mbt->mmap_length / sizeof(multiboot_memory_map_t);
-    
-    
-    if (n > MAX_SZ) {
-        printf("mem_map too large");
-    }
-    
     mem_map_length = 0;
-    for (uint64_t i = 0; i < n; i++) {
-        multiboot_memory_map_t* mmap = (multiboot_memory_map_t*)(uint64_t)(mbt->mmap_addr) + i;
-        memMap[mem_map_length++] = *mmap;
+    multiboot_memory_map_t* mmap = (multiboot_memory_map_t*)(uint64_t)(mbt->mmap_addr);
+    while((uint64_t)mmap <= (uint64_t)mbt->mmap_addr + (uint64_t)mbt->mmap_length - 1) {
+        memMap[mem_map_length] = *mmap;
+        mmap = (multiboot_memory_map_t*)((uint64_t)mmap + mmap->size + sizeof(uint32_t));
+        mem_map_length++;
+        if (mem_map_length > MAX_SZ) {
+            printf("mem_map too large");
+        }
     }
+    
+    
     printf("default mem_map:\n");
     printMemMap();
     
     printf("new mem_map:\n");
-    useSeg((uint64_t)data_phys_begin , (uint64_t)data_phys_end - 1);
-    useSeg((uint64_t)bss_phys_begin , (uint64_t)bss_phys_end - 1);
-    
+    useSeg((uint64_t)text_phys_begin, (uint64_t)bss_phys_end - 1);
     printMemMap();
 }

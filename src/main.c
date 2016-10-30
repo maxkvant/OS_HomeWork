@@ -12,12 +12,15 @@ static void qemu_gdb_hang(void)
 #include <ioport.h>
 #include <memory.h>  
 
-static void blockAllockTest() {
+void blockAllockTest() {
+    PageListNode listPages;
+    blockAllockInit(&listPages);
+    
     int n = 30;
-    volatile char ** a = (volatile char**)(uint64_t)blockAllock(n * sizeof(char*));
+    volatile char ** a = (volatile char**)(uint64_t)blockAllock(&listPages, n * sizeof(char*));
     for (int i = 0; i < n; i++) {
         int l = 79;
-        a[i] = blockAllock(l + 1);
+        a[i] = blockAllock(&listPages, l + 1);
         for (int j = 0; j < l; j++) {
             a[i][j] = 'a' + (i + j) % 26;
         }
@@ -27,6 +30,7 @@ static void blockAllockTest() {
         printf("%d %s\n", i, a[i]);
     }
     printf("\n");
+    blockAllockClear(&listPages);
 }
 
 static void pageAllocTest() {

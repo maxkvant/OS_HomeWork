@@ -18,6 +18,17 @@
     void pageAllocInit();
     char* getPage();
     void delPage(char *page);
-    char* blockAllock(int sz);
+    
+    typedef struct PageListNode_t PageListNode;
+    
+    struct PageListNode_t {
+        PageListNode *next;
+        PageListNode *prev;
+        char* pointer;
+    };
+    
+    void blockAllockInit(PageListNode * list);
+    char* blockAllock(PageListNode * list, int sz);
+    void blockAllockClear(PageListNode *listPages);
     
 #endif
