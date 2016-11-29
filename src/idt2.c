@@ -146,12 +146,17 @@ static uint32_t cnti = 0;
 extern void backtrace();
 
 void interruptF(uint64_t x) {
-    printf("interrupt %u   #%lld {\n", x, cnti++);
-    backtrace();
+    //printf("interrupt %u   #%lld {\n", x, cnti);
+    cnti++;
     if (32 <= x && x < 48) {
         picEndOfInterrupt((uint16_t)x);
     }
-    printf("}\n\n");
+    if (32 == x) {
+         changeThread();
+    } else {
+        backtrace();
+    }
+    //printf("}\n\n");
 }
 
 

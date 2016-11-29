@@ -49,10 +49,10 @@ void picSetup() {
 
 void picEndOfInterrupt(uint16_t i) {
     if (i >= 40) {
-        puts("EOI_S\n");
+    //    puts("EOI_S\n");
         out8( SLAVE_C, 1 << 5);
     }
-    puts("EOI_M\n");
+    //puts("EOI_M\n");
     out8(MASTER_C, 1 << 5);
 }
 

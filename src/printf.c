@@ -96,7 +96,11 @@ static void putO(uint64_t x, int bytes) {
 
 static int64_t cur_len;
 
+static int output_used = 0;
+
 static void __vprintf(char* s, va_list ap, void(*__putc_f)(char)) {
+    lock(&output_used);
+    
     cur_len = 0;
     putc_f = __putc_f;
     for (; *s; s++) {
@@ -137,6 +141,7 @@ static void __vprintf(char* s, va_list ap, void(*__putc_f)(char)) {
             putc_f(*s);
         }
     }
+    output_used = 0;
 }
 
 static char* buf;

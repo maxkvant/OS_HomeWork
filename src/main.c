@@ -12,73 +12,79 @@ static void qemu_gdb_hang(void)
 #include <ioport.h>
 #include <memory.h>  
 
-void blockAllockTest() {
-    PageListNode listPages;
-    blockAllockInit(&listPages);
-    
-    int n = 30;
-    volatile char ** a = (volatile char**)(uint64_t)blockAllock(&listPages, n * sizeof(char*));
-    for (int i = 0; i < n; i++) {
-        int l = 79;
-        a[i] = blockAllock(&listPages, l + 1);
-        for (int j = 0; j < l; j++) {
-            a[i][j] = 'a' + (i + j) % 26;
+#define TIMES 555555
+
+
+
+void F1() {
+    int k = 0;
+    while (1) {
+        if (k % TIMES == 0) {
+            printf("thread F1 running\n");
         }
-        a[i][l] = 0;
+        k++;
     }
-    for (int i = 0; i < n; i++) {
-        printf("%d %s\n", i, a[i]);
-    }
-    printf("\n");
-    blockAllockClear(&listPages);
 }
 
-static void pageAllocTest() {
-    char *lastPage = 0;
-    int i = 0;
-    printf("huge alloc:\n");
-    for (char* curPage; 0 != (curPage = getPage()); i++) {
-        uint64_t *p = (uint64_t *)curPage;
-        *p = (uint64_t)lastPage;
-        lastPage = curPage;
+void F2() {
+    int k = 0;
+    while (1) {
+        if (k % TIMES == 0) {
+            printf("thread F2 running\n");
+        }
+        k++;
     }
-    printf("allocated = %d\n", i * PAGE_SIZE);
-    i = 0;
-    for (uint64_t *p = (uint64_t *)lastPage; p != 0; p = (uint64_t*)(uint64_t)*p, i++) {
-        delPage((char*)p);
-    }
-    printf("cleaned = %d\n\n", i * PAGE_SIZE);
 }
 
+void F3() {
+    int k = 0;
+    while (1) {
+        if (k % TIMES == 0) {
+            printf("thread F3 running\n");
+        }
+        k++;
+    }
+}
+
+
+
+void H() {
+    int64_t k = 10ll * TIMES;
+    while(k--) {
+        if (k % TIMES == 0) {
+            printf("thread H running\n");
+        }
+    }
+}
+
+void G() {
+    int64_t k = 10;
+    while(k--) {
+        printf("thread G running\n");
+    }
+}
 
 void main(multiboot_info_t *mbt) {
     qemu_gdb_hang();
     
     memMapInit(mbt);
-    pageAllocInit();
     
     serialSetup();
     initIdt();
+    picSetup();
+    pitSetup();
     
-    blockAllockTest();
+    enable_ints();
     
-    pageAllocTest();
-    pageAllocTest();
-    pageAllocTest();
-    
-    blockAllockTest();
-    
-    pageAllocTest();
-    pageAllocTest();
-    
-    //picSetup();
-    //enable_ints();
-    //pitSetup();
-    
-    
+    start_thread(F1, 1);
+    start_thread(F2, 1);
+    start_thread(F3, 1);
+    start_thread(G, 0);
+    start_thread(H, 0);
     int k = 0;
+    
     while (1) {
-        if (k % 555555 == 0) {
+        if (k % TIMES == 0) {
         //    printf("running\n");
         }
         k++;
@@ -92,7 +98,7 @@ void main(multiboot_info_t *mbt) {
    target remote localhost:1234
    set var wait=0
 break backtrace
-break backtraceF
+break backtrace
 break interrupt1
 break interrupt2
 break interrupt3

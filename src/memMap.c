@@ -22,17 +22,17 @@ multiboot_memory_map_t* getMemMap() {
 }
 
 
-static void printMemMap__(multiboot_memory_map_t* mmap_addr, uint64_t mmap_length) {
+/*static void printMemMap__(multiboot_memory_map_t* mmap_addr, uint64_t mmap_length) {
     for (uint64_t i = 0; i < mmap_length; i++) {
         multiboot_memory_map_t* mmap = mmap_addr + i;
         printf("    memory range: %llx - %llx, len %llx,  type %d\n", mmap->addr, mmap->addr + mmap->len - 1, mmap->len, mmap->type);
     }
     printf("\n");
-}
+}*/
 
-void printMemMap() {
+/*void printMemMap() {
     printMemMap__(memMap, mem_map_length);
-}
+}*/
 
 static void init_mmap(multiboot_memory_map_t* mmap, int type, uint64_t l, uint64_t r) {
     mmap -> size = sizeof(multiboot_memory_map_t) - sizeof(uint32_t);
@@ -60,9 +60,9 @@ static void useSeg(uint64_t l, uint64_t r) {
 }
 
 void memMapInit(multiboot_info_t *mbt) {
-    printf(" bss_phys: [%llx %llx)\n", (uint64_t)bss_phys_begin , (uint64_t)bss_phys_end);
-    printf("text/data_phys: [%llx %llx)\n", (uint64_t)text_phys_begin , (uint64_t)data_phys_end);
-    printf("mbt %llx\n", mbt);
+    //printf(" bss_phys: [%llx %llx)\n", (uint64_t)bss_phys_begin , (uint64_t)bss_phys_end);
+    //printf("text/data_phys: [%llx %llx)\n", (uint64_t)text_phys_begin , (uint64_t)data_phys_end);
+    //printf("mbt %llx\n", mbt);
     
     mem_map_length = 0;
     multiboot_memory_map_t* mmap = (multiboot_memory_map_t*)(uint64_t)(mbt->mmap_addr);
@@ -76,10 +76,10 @@ void memMapInit(multiboot_info_t *mbt) {
     }
     
     
-    printf("default mem_map:\n");
-    printMemMap();
+    //printf("default mem_map:\n");
+    //printMemMap();
     
-    printf("new mem_map:\n");
+    //printf("new mem_map:\n");
     useSeg((uint64_t)text_phys_begin, (uint64_t)bss_phys_end - 1);
-    printMemMap();
+    //printMemMap();
 }

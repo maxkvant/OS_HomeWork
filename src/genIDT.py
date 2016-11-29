@@ -25,6 +25,8 @@ for i in range(n):
     fS.write("    .type " + name + ", @function" + '\n');   
     fS.write(name  + ':\n');
     
+    fS.write("    cli\n");
+    
     if (i == 8) or (10 <= i <= 14) or (i == 17):
         fS.write("    addq $8, %rsp\n\n");
     
@@ -44,6 +46,9 @@ for i in range(n):
     
     
     fS.write("    popq %rbp\n");
+    
+    fS.write("    sti\n");
+    
     fS.write("    iretq" + '\n\n\n');
     
 fS.close()
@@ -90,12 +95,17 @@ fc.write("static uint32_t cnti = 0;\n\n");
 fc.write("extern void backtrace();\n\n");
 
 fc.write("void interruptF(uint64_t x) {\n");
-fc.write("    printf(\"interrupt %u   #%lld {\\n\", x, cnti++);\n");
-fc.write("    backtrace();\n");
+fc.write("    //printf(\"interrupt %u   #%lld {\\n\", x, cnti);\n");
+fc.write("    cnti++;\n");
 fc.write("    if (32 <= x && x < 48) {\n");
 fc.write("        picEndOfInterrupt((uint16_t)x);\n");
 fc.write("    }\n");
-fc.write("    printf(\"}\\n\\n\");\n");
+fc.write("    if (32 == x) {\n");
+fc.write("         changeThread();\n");
+fc.write("    } else {\n");
+fc.write("        backtrace();\n");
+fc.write("    }\n");
+fc.write("    //printf(\"}\\n\\n\");\n");
 fc.write("}\n\n");
 
 fc.write("\n\n");
